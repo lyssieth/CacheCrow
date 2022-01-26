@@ -1,5 +1,5 @@
-﻿using CacheCrow.Model;
-using System;
+﻿using System;
+using CacheCrow.Model;
 
 namespace CacheCrow.Cache
 {
@@ -33,7 +33,7 @@ namespace CacheCrow.Cache
         /// <param name="data">Value</param>
         void Add(K key, V data);
         /// <summary>
-        /// Inputs entry in Active CacheCrow with an option to update the cache value on expiration. The timer is reset after updation.
+        /// Inputs entry in Active CacheCrow with an option to update the cache value on expiration. The timer is reset after updating.
         /// </summary>
         /// <param name="Key"></param>
         /// <param name="data"></param>
@@ -85,7 +85,7 @@ namespace CacheCrow.Cache
         /// <summary>
         /// Raised when CacheCrow is empty.Note: It is also periodically raised by Cleaner when CacheCrow is empty.
         /// </summary>
-        event EmptyCacheHandler EmptyCacheEvent;
+        event EventHandler<EventArgs> EmptyCacheEvent;
     }
     /// <summary>
     /// Handler to handle EmptyCacheEvent.

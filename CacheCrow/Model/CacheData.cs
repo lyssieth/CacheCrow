@@ -27,7 +27,7 @@ namespace CacheCrow.Model
         public DateTime ModifiedDate;
 
         /// <summary>
-        /// 
+        /// Function to run when something expires.
         /// </summary>
         public Func<V> OnExpire { get; set; }
         /// <summary>

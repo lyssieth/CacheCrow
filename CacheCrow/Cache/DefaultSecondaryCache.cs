@@ -1,11 +1,9 @@
-﻿using CacheCrow.Model;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.AccessControl;
-using System.Web;
+using System.Text.Json;
+using CacheCrow.Model;
 
 namespace CacheCrow.Cache
 {
@@ -15,22 +13,14 @@ namespace CacheCrow.Cache
         private readonly string _cacheDirectoryPath;
 
         public int Count { get; private set; }
-        public double CacheExpireInMilliseconds { get; private set; }
+        public double CacheExpireInMilliseconds { get; }
 
         public DefaultSecondaryCache(double cacheExpireInMilliseconds)
         {
             CacheExpireInMilliseconds = cacheExpireInMilliseconds;
             Count = -1;
 
-            string appDirectory;
-            if (!string.IsNullOrEmpty(HttpRuntime.AppDomainAppId))
-            {
-                appDirectory = HttpRuntime.AppDomainAppPath;
-            }
-            else
-            {
-                appDirectory = Path.GetFullPath(@"..\..\_crow");
-            }
+            string appDirectory = Path.GetFullPath(@"..\..\_crow");
             _cacheDirectoryPath = appDirectory + "_crow";
             _cachePath = _cacheDirectoryPath + @"\CacheCrow";
             if (!Directory.Exists(_cacheDirectoryPath))
@@ -54,12 +44,9 @@ namespace CacheCrow.Cache
             {
                 if (IsEmpty())
                 {
-                    using (FileStream fs = new FileStream(_cachePath, FileMode.Open))
-                    {
-                        BinaryFormatter bf = new BinaryFormatter();
-                        dic = (ConcurrentDictionary<K, CacheData<V>>)bf.Deserialize(fs);
-                        dic = GetValidCache(dic);
-                    }
+                    using FileStream fs = new(_cachePath, FileMode.Open);
+                    dic = JsonSerializer.Deserialize<ConcurrentDictionary<K, CacheData<V>>>(fs);
+                    dic = GetValidCache(dic);
                 }
                 else
                 {
@@ -78,11 +65,8 @@ namespace CacheCrow.Cache
                 {
                     CreateCacheDirectory();
                 }
-                using (FileStream fs = new FileStream(_cachePath, FileMode.Create))
-                {
-                    BinaryFormatter bf = new BinaryFormatter();
-                    bf.Serialize(fs, cache);
-                }
+                using FileStream fs = new(_cachePath, FileMode.Create);
+                JsonSerializer.Serialize(fs, cache);
             }
         }
 
@@ -94,27 +78,19 @@ namespace CacheCrow.Cache
         private void CreateCacheDirectory()
         {
             Directory.CreateDirectory(_cacheDirectoryPath);
-            var ds = new DirectorySecurity(_cacheDirectoryPath, AccessControlSections.Access);
-            Directory.SetAccessControl(_cacheDirectoryPath, ds);
         }
 
         public bool Exists()
         {
-            if (File.Exists(_cachePath))
-            {
-                return true;
-            }
-            return false;
+            return File.Exists(_cachePath);
         }
 
         public bool IsEmpty()
         {
             if (IsAccessible())
             {
-                using (var fs = new FileStream(_cachePath, FileMode.Open))
-                {
-                    return fs.Length > 0;
-                }
+                using var fs = new FileStream(_cachePath, FileMode.Open);
+                return fs.Length > 0;
             }
             return true;
         }
@@ -129,10 +105,8 @@ namespace CacheCrow.Cache
             var fileInfo = new FileInfo(_cachePath);
             try
             {
-                using (var fileStream = fileInfo.Open(FileMode.Open, FileAccess.ReadWrite))
-                {
-                    return true;
-                }
+                using var fileStream = fileInfo.Open(FileMode.Open, FileAccess.ReadWrite);
+                return true;
             }
             catch
             {

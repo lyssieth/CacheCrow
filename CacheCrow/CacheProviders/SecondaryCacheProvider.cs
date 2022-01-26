@@ -1,7 +1,7 @@
-﻿using CacheCrow.Cache;
-using System;
+﻿using System;
 using System.Collections.Specialized;
 using System.Configuration;
+using CacheCrow.Cache;
 
 namespace CacheCrow.CacheProviders
 {
@@ -30,10 +30,10 @@ namespace CacheCrow.CacheProviders
             var secondaryCacheType = typeof(DefaultSecondaryCache<K, V>);
             var cacheExpireInMilliseconds = DefaultExpireInMilliseconds;
             var section = GetCacheSectionFromConfig();
-            if (section != null && section.Count > 0)
+            if (section?.Count > 0)
             {
-                var cacheFullQualifiedName = section[ CacheKey ];
-                var expireTime = section[ ExpireTimeKey ];
+                var cacheFullQualifiedName = section[CacheKey];
+                var expireTime = section[ExpireTimeKey];
                 cacheExpireInMilliseconds = double.TryParse(expireTime, out var expire) ? expire : cacheExpireInMilliseconds;
                 if (!string.IsNullOrWhiteSpace(cacheFullQualifiedName))
                 {
@@ -42,7 +42,6 @@ namespace CacheCrow.CacheProviders
             }
             return CreateInstance(secondaryCacheType, cacheExpireInMilliseconds);
         }
-
 
         private static NameValueCollection GetCacheSectionFromConfig()
         {
@@ -54,11 +53,10 @@ namespace CacheCrow.CacheProviders
         {
             if (type.IsGenericTypeDefinition)
             {
-                type = type.MakeGenericType(typeof(K), typeof(V));  
+                type = type.MakeGenericType(typeof(K), typeof(V));
             }
             _secondaryCache = Activator.CreateInstance(type, cacheExpireInMilliseconds) as ISecondaryCache<K, V>;
             return _secondaryCache;
         }
     }
-
 }

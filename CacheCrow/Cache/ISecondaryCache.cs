@@ -1,5 +1,5 @@
-﻿using CacheCrow.Model;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
+using CacheCrow.Model;
 
 namespace CacheCrow.Cache
 {
@@ -62,4 +62,3 @@ namespace CacheCrow.Cache
         bool IsEmpty();
     }
 }
-
